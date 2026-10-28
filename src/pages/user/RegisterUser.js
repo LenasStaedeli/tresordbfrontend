@@ -33,7 +33,8 @@ function RegisterUser({loginValues, setLoginValues}) {
 
         try {
             await postUser(credentials);
-            setLoginValues({userName: credentials.email, password: credentials.password});
+            //the secrets use email and password of the user
+            setLoginValues({email: credentials.email, password: credentials.password});
             setCredentials(initialState);
             navigate('/');
         } catch (error) {
@@ -47,46 +48,47 @@ function RegisterUser({loginValues, setLoginValues}) {
             <h2>Register user</h2>
             <form onSubmit={handleSubmit}>
                 <section>
-                <aside>
-                    <div>
-                        <label>Firstname:</label>
-                        <input
-                            type="text"
-                            value={credentials.firstName}
-                            onChange={(e) =>
-                                setCredentials(prevValues => ({...prevValues, firstName: e.target.value}))}
-                            required
-                            placeholder="Please enter your firstname *"
-                        />
-                    </div>
-                    <div>
-                        <label>Lastname:</label>
-                        <input
-                            type="text"
-                            value={credentials.lastName}
-                            onChange={(e) =>
-                                setCredentials(prevValues => ({...prevValues, lastName: e.target.value}))}
-                            required
-                            placeholder="Please enter your lastname *"
-                        />
-                    </div>
-                    <div>
-                        <label>Email:</label>
-                        <input
-                            type="text"
-                            value={credentials.email}
-                            onChange={(e) =>
-                                setCredentials(prevValues => ({...prevValues, email: e.target.value}))}
-                            required
-                            placeholder="Please enter your email"
-                        />
-                    </div>
-                </aside>
+                    <aside>
+                        <div>
+                            <label>Firstname:</label>
+                            <input
+                                type="text"
+                                value={credentials.firstName}
+                                onChange={(e) =>
+                                    setCredentials(prevValues => ({...prevValues, firstName: e.target.value}))}
+                                required
+                                placeholder="Please enter your firstname *"
+                            />
+                        </div>
+                        <div>
+                            <label>Lastname:</label>
+                            <input
+                                type="text"
+                                value={credentials.lastName}
+                                onChange={(e) =>
+                                    setCredentials(prevValues => ({...prevValues, lastName: e.target.value}))}
+                                required
+                                placeholder="Please enter your lastname *"
+                            />
+                        </div>
+                        <div>
+                            <label>Email:</label>
+                            <input
+                                type="text"
+                                value={credentials.email}
+                                onChange={(e) =>
+                                    setCredentials(prevValues => ({...prevValues, email: e.target.value}))}
+                                required
+                                placeholder="Please enter your email"
+                            />
+                        </div>
+                    </aside>
                     <aside>
                         <div>
                             <label>Password:</label>
                             <input
-                                type="text"
+                                type="password"
+                                autoComplete="new-password"
                                 value={credentials.password}
                                 onChange={(e) =>
                                     setCredentials(prevValues => ({...prevValues, password: e.target.value}))}
@@ -97,7 +99,8 @@ function RegisterUser({loginValues, setLoginValues}) {
                         <div>
                             <label>Password confirmation:</label>
                             <input
-                                type="text"
+                                type="password"
+                                autoComplete="new-password"
                                 value={credentials.passwordConfirmation}
                                 onChange={(e) =>
                                     setCredentials(prevValues => ({...prevValues, passwordConfirmation: e.target.value}))}

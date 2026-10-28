@@ -12,7 +12,6 @@ function LoginUser({loginValues, setLoginValues}) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(loginValues);
         setErrorMessage('');
 
         try {
@@ -44,7 +43,8 @@ function LoginUser({loginValues, setLoginValues}) {
                         <div>
                             <label>Password:</label>
                             <input
-                                type="text"
+                                type="password"
+                                autoComplete="current-password"
                                 value={loginValues.password}
                                 onChange={(e) =>
                                     setLoginValues(prevValues => ({...prevValues, password: e.target.value}))}
@@ -55,6 +55,7 @@ function LoginUser({loginValues, setLoginValues}) {
                     </aside>
                 </section>
                 <button type="submit">Login</button>
+                {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
             </form>
         </div>
     );

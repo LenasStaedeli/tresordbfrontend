@@ -3,31 +3,17 @@
  * @author Peter Rutschmann
  */
 
-const getApiUrl = () => {
-    const protocol = process.env.REACT_APP_API_PROTOCOL; // "http"
-    const host = process.env.REACT_APP_API_HOST; // "localhost"
-    const port = process.env.REACT_APP_API_PORT; // "8080"
-    const path = process.env.REACT_APP_API_PATH; // "/api"
-    const portPart = port ? `:${port}` : ''; // port is optional
-    return `${protocol}://${host}${portPart}${path}`;
-};
-
-//read the error message of a failed response (body may be empty or not json)
-const readError = async (response) => {
-    try {
-        const errorData = await response.json();
-        const message = errorData.message || errorData.answer;
-        if (Array.isArray(message)) return message.join(', ');
-        return message || 'Server response failed.';
-    } catch (e) {
-        return 'Server response failed.';
-    }
-};
+const protocol = process.env.REACT_APP_API_PROTOCOL; // "http"
+const host = process.env.REACT_APP_API_HOST; // "localhost"
+const port = process.env.REACT_APP_API_PORT; // "8080"
+const path = process.env.REACT_APP_API_PATH; // "/api"
+const portPart = port ? `:${port}` : ''; // port is optional
+const API_URL = `${protocol}://${host}${portPart}${path}`;
 
 //Post secret to server
 export const postSecret = async ({loginValues, content}) => {
     try {
-        const response = await fetch(`${getApiUrl()}/secrets`, {
+        const response = await fetch(`${API_URL}/secrets`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -40,11 +26,12 @@ export const postSecret = async ({loginValues, content}) => {
         });
 
         if (!response.ok) {
-            throw new Error(await readError(response));
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Server response failed.');
         }
 
         const data = await response.json();
-        console.log('Secret successfully posted');
+        console.log('Secret successfully posted:', data);
         return data;
     } catch (error) {
         console.error('Error posting secret:', error.message);
@@ -55,7 +42,7 @@ export const postSecret = async ({loginValues, content}) => {
 //get all secrets for a user identified by its email
 export const getSecretsforUser = async (loginValues) => {
     try {
-        const response = await fetch(`${getApiUrl()}/secrets/byemail`, {
+        const response = await fetch(`${API_URL}/secrets/byemail`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -66,15 +53,16 @@ export const getSecretsforUser = async (loginValues) => {
             })
         });
 
-        //404: user has no secrets (yet)
+        //404 means: the user has no secrets yet
         if (response.status === 404) {
             return [];
         }
         if (!response.ok) {
-            throw new Error(await readError(response));
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Server response failed.');
         }
         const data = await response.json();
-        console.log('Secrets successfully got');
+        console.log('Secret successfully got:', data);
         return data;
     } catch (error) {
         console.error('Failed to get secrets:', error.message);
@@ -82,10 +70,10 @@ export const getSecretsforUser = async (loginValues) => {
     }
 };
 
-//update (edit) an existing secret
+//change a secret
 export const putSecret = async ({secretId, loginValues, content}) => {
     try {
-        const response = await fetch(`${getApiUrl()}/secrets/${secretId}`, {
+        const response = await fetch(`${API_URL}/secrets/${secretId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -98,10 +86,12 @@ export const putSecret = async ({secretId, loginValues, content}) => {
         });
 
         if (!response.ok) {
-            throw new Error(await readError(response));
+            const errorData = await response.json();
+            throw new Error(errorData.message || errorData.answer || 'Server response failed.');
         }
+
         const data = await response.json();
-        console.log('Secret successfully updated');
+        console.log('Secret successfully updated:', data);
         return data;
     } catch (error) {
         console.error('Error updating secret:', error.message);
@@ -112,15 +102,14 @@ export const putSecret = async ({secretId, loginValues, content}) => {
 //delete a secret
 export const deleteSecret = async (secretId) => {
     try {
-        const response = await fetch(`${getApiUrl()}/secrets/${secretId}`, {
+        const response = await fetch(`${API_URL}/secrets/${secretId}`, {
             method: 'DELETE'
         });
 
         if (!response.ok) {
-            throw new Error(await readError(response));
+            throw new Error('Server response failed.');
         }
         console.log('Secret successfully deleted');
-        return await response.text();
     } catch (error) {
         console.error('Error deleting secret:', error.message);
         throw new Error('Failed to delete secret. ' + error.message);

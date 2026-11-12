@@ -24,6 +24,11 @@ function RegisterUser({loginValues, setLoginValues}) {
         e.preventDefault();
         setErrorMessage('');
 
+        //check strength
+        if(credentials.password !== null || credentials.password.length < 8){
+            if
+        }
+
         //validate
         if(credentials.password !== credentials.passwordConfirmation) {
             console.log("password != passwordConfirmation");
@@ -74,7 +79,7 @@ function RegisterUser({loginValues, setLoginValues}) {
                         <div>
                             <label>Email:</label>
                             <input
-                                type="text"
+                                type="email"
                                 value={credentials.email}
                                 onChange={(e) =>
                                     setCredentials(prevValues => ({...prevValues, email: e.target.value}))}

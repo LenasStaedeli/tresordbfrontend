@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReCAPTCHA from 'react-google-recaptcha';
 import {postUser} from "../../comunication/FetchUser";
+import PasswordStrength from "../../components/PasswordStrength";
+import {getPasswordStrength} from "../../util/passwordRules";
+
+//site key of google reCAPTCHA (public). Change it in the .env file, the default is the test key of google.
+const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
 
 /**
  * RegisterUser
@@ -8,16 +14,17 @@ import {postUser} from "../../comunication/FetchUser";
  */
 function RegisterUser({loginValues, setLoginValues}) {
     const navigate = useNavigate();
+    const recaptchaRef = useRef(null);
 
     const initialState = {
         firstName: "",
         lastName: "",
         email: "",
         password: "",
-        passwordConfirmation: "",
-        errorMessage: ""
+        passwordConfirmation: ""
     };
     const [credentials, setCredentials] = useState(initialState);
+    const [captchaToken, setCaptchaToken] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
 
     const handleSubmit = async (e) => {
@@ -25,8 +32,9 @@ function RegisterUser({loginValues, setLoginValues}) {
         setErrorMessage('');
 
         //check strength
-        if(credentials.password !== null || credentials.password.length < 8){
-            if
+        if (!getPasswordStrength(credentials.password).isStrong) {
+            setErrorMessage('The password is too weak. Please fulfill all rules below the password field.');
+            return;
         }
 
         //validate
@@ -36,8 +44,15 @@ function RegisterUser({loginValues, setLoginValues}) {
             return;
         }
 
+        //captcha has to be solved
+        if (!captchaToken) {
+            setErrorMessage('Please confirm that you are not a robot.');
+            return;
+        }
+
         try {
-            await postUser(credentials);
+            //the captcha token is sent to the backend, there it is checked at google
+            await postUser({...credentials, recaptchaToken: captchaToken});
             //the secrets use email and password of the user
             setLoginValues({email: credentials.email, password: credentials.password});
             setCredentials(initialState);
@@ -45,6 +60,9 @@ function RegisterUser({loginValues, setLoginValues}) {
         } catch (error) {
             console.error('Failed to fetch to server:', error.message);
             setErrorMessage(error.message);
+            //a captcha token can only be used once
+            recaptchaRef.current.reset();
+            setCaptchaToken(null);
         }
     };
 
@@ -100,6 +118,7 @@ function RegisterUser({loginValues, setLoginValues}) {
                                 required
                                 placeholder="Please enter your pwd *"
                             />
+                            <PasswordStrength password={credentials.password}/>
                         </div>
                         <div>
                             <label>Password confirmation:</label>
@@ -112,9 +131,19 @@ function RegisterUser({loginValues, setLoginValues}) {
                                 required
                                 placeholder="Please confirm your pwd *"
                             />
+                            {credentials.passwordConfirmation !== '' &&
+                                credentials.password !== credentials.passwordConfirmation && (
+                                    <p style={{color: '#c0392b', fontSize: '0.85rem'}}>The passwords are not equal.</p>
+                                )}
                         </div>
                     </aside>
                 </section>
+                <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={RECAPTCHA_SITE_KEY}
+                    onChange={(token) => setCaptchaToken(token)}
+                    onExpired={() => setCaptchaToken(null)}
+                />
                 <button type="submit">Register</button>
                 {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
             </form>

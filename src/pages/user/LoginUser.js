@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {useState} from "react";
 import {postUserLogin} from "../../comunication/FetchUser";
 
@@ -55,6 +55,7 @@ function LoginUser({loginValues, setLoginValues}) {
                     </aside>
                 </section>
                 <button type="submit">Login</button>
+                <p><Link to="/user/forgot">Forgot your password?</Link></p>
                 {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
             </form>
         </div>
